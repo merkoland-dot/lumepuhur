@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snow Route Logger</title>
-
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#2d6cdf">
+<title>Snow Logger (Auto GPS)</title>
 
 <style>
 body {
@@ -49,7 +46,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    font-size: 12px;
+    font-size: 13px;
 }
 th, td {
     border: 1px solid #ddd;
@@ -57,74 +54,97 @@ th, td {
     text-align: center;
 }
 th { background: #2d6cdf; color: white; }
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 6px;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-<h2>❄ Snow Route Logger</h2>
+<h2>❄ Snow Logger (Auto GPS)</h2>
 
-<label>Route ID</label>
-<input type="text" id="routeId" placeholder="e.g. JOGEVA_ROUTE_01">
+<label>Station ID</label>
+<input type="text" id="station">
+
+<label>Date & Time</label>
+<input type="datetime-local" id="datetime">
 
 <label>Snow Depth (cm)</label>
-<input type="number" id="snow" step="0.1">
+<input type="number" id="snow" min="0" step="0.1">
 
-<label>Air Temp (°C)</label>
+<label>Air Temperature (°C)</label>
 <input type="number" id="temp" step="0.1">
 
-<button class="primary" onclick="addPoint()">Add Measurement</button>
-<button class="export" onclick="exportCSV()">Export CSV</button>
-<button class="clear" onclick="clearAll()">Clear Route</button>
+<div class="status" id="gpsStatus">
+GPS: waiting...
+</div>
 
-<div class="status" id="gpsStatus">GPS: Not acquired</div>
+<button class="primary" onclick="addRecord()">Add Record (Auto GPS)</button>
+<button class="export" onclick="exportCSV()">Export CSV</button>
+<button class="clear" onclick="clearAll()">Clear All</button>
 
 <table>
 <thead>
 <tr>
-<th>#</th>
+<th>Station</th>
 <th>DateTime</th>
 <th>Snow</th>
 <th>Temp</th>
 <th>Latitude</th>
 <th>Longitude</th>
 <th>Accuracy (m)</th>
+<th>Del</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
+
 </div>
 
 <script>
-let routePoints = JSON.parse(localStorage.getItem("routeData")) || [];
-let pointCounter = routePoints.length;
+let records = JSON.parse(localStorage.getItem("snowData")) || [];
 
-function save() {
-    localStorage.setItem("routeData", JSON.stringify(routePoints));
+function saveToStorage() {
+    localStorage.setItem("snowData", JSON.stringify(records));
 }
 
 function loadTable() {
     const table = document.getElementById("tableBody");
     table.innerHTML = "";
-    routePoints.forEach(p => {
+
+    records.forEach((r, index) => {
         const row = table.insertRow();
-        row.insertCell(0).innerText = p.point;
-        row.insertCell(1).innerText = p.datetime;
-        row.insertCell(2).innerText = p.snow;
-        row.insertCell(3).innerText = p.temp;
-        row.insertCell(4).innerText = p.lat;
-        row.insertCell(5).innerText = p.lon;
-        row.insertCell(6).innerText = p.accuracy;
+        row.insertCell(0).innerText = r.station;
+        row.insertCell(1).innerText = r.datetime;
+        row.insertCell(2).innerText = r.snow;
+        row.insertCell(3).innerText = r.temp;
+        row.insertCell(4).innerText = r.lat || "";
+        row.insertCell(5).innerText = r.lon || "";
+        row.insertCell(6).innerText = r.accuracy || "";
+
+        const delCell = row.insertCell(7);
+        const btn = document.createElement("button");
+        btn.innerText = "X";
+        btn.className = "delete-btn";
+        btn.onclick = () => deleteRecord(index);
+        delCell.appendChild(btn);
     });
 }
 
-function addPoint() {
-    const routeId = document.getElementById("routeId").value.trim();
+function addRecord() {
+    const station = document.getElementById("station").value.trim();
+    const datetime = document.getElementById("datetime").value;
     const snow = document.getElementById("snow").value;
     const temp = document.getElementById("temp").value;
 
-    if (!routeId || snow === "") {
-        alert("Route ID and snow required.");
+    if (!station || !datetime || snow === "") {
+        alert("Station, datetime and snow required.");
         return;
     }
 
@@ -135,72 +155,87 @@ function addPoint() {
 
     document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
 
-    navigator.geolocation.getCurrentPosition(position => {
+    navigator.geolocation.getCurrentPosition(
+        position => {
 
-        pointCounter++;
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+            const acc = Math.round(position.coords.accuracy);
 
-        const lat = position.coords.latitude.toFixed(6);
-        const lon = position.coords.longitude.toFixed(6);
-        const acc = Math.round(position.coords.accuracy);
+            document.getElementById("gpsStatus").innerText =
+                "GPS: " + lat + ", " + lon + " (±" + acc + "m)";
 
-        document.getElementById("gpsStatus").innerText =
-            "GPS: " + lat + ", " + lon + " (±" + acc + "m)";
+            records.push({
+                station,
+                datetime,
+                snow,
+                temp,
+                lat,
+                lon,
+                accuracy: acc
+            });
 
-        const pointData = {
-            routeId,
-            point: pointCounter,
-            datetime: new Date().toISOString(),
-            snow,
-            temp,
-            lat,
-            lon,
-            accuracy: acc
-        };
+            saveToStorage();
+            loadTable();
+        },
+        error => {
+            document.getElementById("gpsStatus").innerText =
+                "GPS error: " + error.message;
 
-        routePoints.push(pointData);
-        save();
-        loadTable();
+            alert("GPS failed — record saved without location.");
 
-        document.getElementById("snow").value = "";
-        document.getElementById("temp").value = "";
+            records.push({
+                station,
+                datetime,
+                snow,
+                temp
+            });
 
-    }, error => {
-        document.getElementById("gpsStatus").innerText =
-            "GPS error: " + error.message;
-    }, {
-        enableHighAccuracy: true
-    });
+            saveToStorage();
+            loadTable();
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+function deleteRecord(index) {
+    records.splice(index, 1);
+    saveToStorage();
+    loadTable();
 }
 
 function clearAll() {
-    if (!confirm("Delete entire route?")) return;
-    routePoints = [];
-    pointCounter = 0;
-    save();
+    if (!confirm("Delete all records?")) return;
+    records = [];
+    saveToStorage();
     loadTable();
 }
 
 function exportCSV() {
-    if (routePoints.length === 0) return;
+    if (records.length === 0) {
+        alert("No data to export.");
+        return;
+    }
 
-    let csv = "RouteID;Point;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m\n";
+    let csv = "Station;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m\n";
 
-    routePoints.forEach(p => {
-        csv += `${p.routeId};${p.point};${p.datetime};${p.snow};${p.temp};${p.lat};${p.lon};${p.accuracy}\n`;
+    records.forEach(r => {
+        csv += `${r.station};${r.datetime};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""}\n`;
     });
 
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "snow_route_" + new Date().toISOString().slice(0,10) + ".csv";
+    link.download = "snow_observations_" + new Date().toISOString().slice(0,10) + ".csv";
     link.click();
 }
 
+document.getElementById("datetime").value = new Date().toISOString().slice(0,16);
 loadTable();
-
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
-}
 </script>
 
 </body>
