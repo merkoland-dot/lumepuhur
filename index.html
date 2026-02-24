@@ -28,10 +28,7 @@ input, textarea, button {
     border: 1px solid #ccc;
     font-size: 16px;
 }
-button {
-    border: none;
-    cursor: pointer;
-}
+button { border: none; cursor: pointer; }
 .primary { background: #2d6cdf; color: white; }
 .export { background: #27ae60; color: white; }
 .clear { background: #c0392b; color: white; }
@@ -67,7 +64,7 @@ th { background: #2d6cdf; color: white; }
 <body>
 
 <div class="container">
-<h2>❄ Snow Spot Logger (EE Time)</h2>
+<h2>❄ Snow Spot Logger (Eesti aeg)</h2>
 
 <label>Spot ID / Name</label>
 <input type="text" id="station">
@@ -119,6 +116,12 @@ function save() {
     localStorage.setItem("snowSpots", JSON.stringify(records));
 }
 
+function getLocalDatetimeString() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now - offset).toISOString().slice(0,16);
+}
+
 function loadTable() {
     const table = document.getElementById("tableBody");
     table.innerHTML = "";
@@ -126,7 +129,7 @@ function loadTable() {
     records.forEach((r, index) => {
         const row = table.insertRow();
         row.insertCell(0).innerText = r.station;
-        row.insertCell(1).innerText = r.ee;   // ainult Eesti aeg nähtav
+        row.insertCell(1).innerText = r.ee;
         row.insertCell(2).innerText = r.snow;
         row.insertCell(3).innerText = r.temp;
         row.insertCell(4).innerText = r.lat || "";
@@ -155,10 +158,7 @@ function addRecord() {
         return;
     }
 
-    // Eesti aeg (täpselt sisestatud)
     const eeTime = localInput;
-
-    // UTC teaduslikuks kasutuseks
     const utcTime = new Date(localInput).toISOString();
 
     document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
@@ -190,7 +190,7 @@ function addRecord() {
             clearForm();
 
         },
-        function(error) {
+        function() {
 
             alert("GPS failed. Spot saved without coordinates.");
 
@@ -223,8 +223,7 @@ function deleteRecord(index) {
 
 function clearForm() {
     document.getElementById("station").value = "";
-    document.getElementById("datetime").value =
-        new Date().toISOString().slice(0,16);
+    document.getElementById("datetime").value = getLocalDatetimeString();
     document.getElementById("snow").value = "";
     document.getElementById("temp").value = "";
     document.getElementById("notes").value = "";
@@ -257,9 +256,7 @@ function exportCSV() {
     link.click();
 }
 
-document.getElementById("datetime").value =
-    new Date().toISOString().slice(0,16);
-
+document.getElementById("datetime").value = getLocalDatetimeString();
 loadTable();
 
 </script>
