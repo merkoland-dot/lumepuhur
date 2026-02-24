@@ -67,12 +67,12 @@ th { background: #2d6cdf; color: white; }
 <body>
 
 <div class="container">
-<h2>❄ Snow Spot Logger (EE Time + UTC)</h2>
+<h2>❄ Snow Spot Logger (EE Time)</h2>
 
 <label>Spot ID / Name</label>
 <input type="text" id="station">
 
-<label>Date & Time (Local)</label>
+<label>Date & Time (Eesti aeg)</label>
 <input type="datetime-local" id="datetime">
 
 <label>Snow Depth (cm)</label>
@@ -97,13 +97,12 @@ GPS: waiting...
 <thead>
 <tr>
 <th>Spot</th>
-<th>UTC</th>
-<th>EE Time</th>
+<th>DateTime (EE)</th>
 <th>Snow</th>
 <th>Temp</th>
 <th>Lat</th>
 <th>Lon</th>
-<th>Acc</th>
+<th>Accuracy</th>
 <th>Del</th>
 </tr>
 </thead>
@@ -120,12 +119,6 @@ function save() {
     localStorage.setItem("snowSpots", JSON.stringify(records));
 }
 
-function formatEstonianTime(dateObj) {
-    return dateObj.toLocaleString("sv-SE", {
-        timeZone: "Europe/Tallinn"
-    }).replace(" ", "T");
-}
-
 function loadTable() {
     const table = document.getElementById("tableBody");
     table.innerHTML = "";
@@ -133,15 +126,14 @@ function loadTable() {
     records.forEach((r, index) => {
         const row = table.insertRow();
         row.insertCell(0).innerText = r.station;
-        row.insertCell(1).innerText = r.utc;
-        row.insertCell(2).innerText = r.ee;
-        row.insertCell(3).innerText = r.snow;
-        row.insertCell(4).innerText = r.temp;
-        row.insertCell(5).innerText = r.lat || "";
-        row.insertCell(6).innerText = r.lon || "";
-        row.insertCell(7).innerText = r.accuracy || "";
+        row.insertCell(1).innerText = r.ee;   // ainult Eesti aeg nähtav
+        row.insertCell(2).innerText = r.snow;
+        row.insertCell(3).innerText = r.temp;
+        row.insertCell(4).innerText = r.lat || "";
+        row.insertCell(5).innerText = r.lon || "";
+        row.insertCell(6).innerText = r.accuracy || "";
 
-        const delCell = row.insertCell(8);
+        const delCell = row.insertCell(7);
         const btn = document.createElement("button");
         btn.innerText = "X";
         btn.className = "delete-btn";
@@ -163,9 +155,11 @@ function addRecord() {
         return;
     }
 
-    const dateObj = new Date(localInput);
-    const utcTime = dateObj.toISOString();
-    const eeTime = formatEstonianTime(dateObj);
+    // Eesti aeg (täpselt sisestatud)
+    const eeTime = localInput;
+
+    // UTC teaduslikuks kasutuseks
+    const utcTime = new Date(localInput).toISOString();
 
     document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
 
@@ -181,8 +175,8 @@ function addRecord() {
 
             records.push({
                 station,
-                utc: utcTime,
                 ee: eeTime,
+                utc: utcTime,
                 snow,
                 temp,
                 lat,
@@ -197,12 +191,13 @@ function addRecord() {
 
         },
         function(error) {
+
             alert("GPS failed. Spot saved without coordinates.");
 
             records.push({
                 station,
-                utc: utcTime,
                 ee: eeTime,
+                utc: utcTime,
                 snow,
                 temp,
                 notes
@@ -249,10 +244,10 @@ function exportCSV() {
         return;
     }
 
-    let csv = "SpotID;DateTime_UTC;DateTime_EE;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
+    let csv = "SpotID;DateTime_EE;DateTime_UTC;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
 
     records.forEach(r => {
-        csv += `${r.station};${r.utc};${r.ee};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""};${r.notes || ""}\n`;
+        csv += `${r.station};${r.ee};${r.utc};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""};${r.notes || ""}\n`;
     });
 
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
