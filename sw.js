@@ -1,16 +1,13 @@
-const CACHE_NAME = "snow-route-cache-v4";
+const CACHE_NAME = "snow-route-cache-v10";
 
 const ASSETS = [
   "./",
   "./index.html",
-  "./manifest.json",
-  "./app.js"
+  "./manifest.json"
 ];
 
-/* INSTALL */
 self.addEventListener("install", event => {
-  self.skipWaiting(); // aktiveerib kohe uue versiooni
-
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS);
@@ -18,7 +15,6 @@ self.addEventListener("install", event => {
   );
 });
 
-/* ACTIVATE */
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -32,7 +28,6 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-/* FETCH */
 self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(event.request)
