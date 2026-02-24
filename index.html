@@ -20,18 +20,25 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-input, textarea, button {
+input, textarea {
+    width: 100%;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    font-size: 16px;
+    font-size: 18px;
+    margin-top: 8px;
 }
-input, textarea { width: 100%; margin-top: 8px; }
-button { cursor: pointer; border: none; }
+button {
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    font-weight: bold;
+}
 
-.primary { background: #2d6cdf; color: white; width:100%; margin-top:10px; }
-.export { background: #27ae60; color: white; width:100%; margin-top:10px; }
-.clear { background: #c0392b; color: white; width:100%; margin-top:10px; }
+.primary { background:#2d6cdf; color:white; width:100%; padding:14px; margin-top:10px;}
+.export { background:#27ae60; color:white; width:100%; padding:14px; margin-top:10px;}
+.clear { background:#c0392b; color:white; width:100%; padding:14px; margin-top:10px;}
+.secondary { background:#aaa; color:white; width:100%; padding:14px; margin-top:10px;}
 
 .status { margin-top:10px; font-size:14px; color:#555; }
 
@@ -48,96 +55,111 @@ th, td {
 }
 th { background:#2d6cdf; color:white; }
 
-.delete-btn {
-    background:#e74c3c;
-    color:white;
-    border:none;
-    padding:5px 8px;
-    border-radius:6px;
-}
-
-/* Temperature Big Buttons */
-
-.temp-container { margin-top: 8px; }
+/* TEMPERATURE */
 
 .temp-input {
-    width: 100%;
-    font-size: 26px;
-    text-align: center;
-    font-weight: bold;
+    font-size:26px;
+    text-align:center;
+    font-weight:bold;
 }
 
-.temp-buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.temp-sign {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
+.temp-row {
+    display:flex;
+    gap:6px;
+    margin-top:10px;
 }
 
 .temp-btn {
-    flex: 1;
-    font-size: 22px;
-    padding: 20px 0;
-    border-radius: 12px;
-    font-weight: bold;
+    flex:1;
+    padding:18px 0;
+    font-size:20px;
 }
 
-.minus-big { background: #0b3d91; color: white; }
-.minus { background: #3b6edb; color: white; }
-.plus { background: #e67e22; color: white; }
-.plus-big { background: #c0392b; color: white; }
-.sign { background: #555; color: white; }
+.tminusBig { background:#0b3d91; color:white; }
+.tminus { background:#3b6edb; color:white; }
+.tplus { background:#e67e22; color:white; }
+.tplusBig { background:#c0392b; color:white; }
+.tsign { background:#555; color:white; }
+
+/* SNOW */
+
+.snow-input {
+    font-size:26px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.snow-row {
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+
+.snow-btn {
+    flex:1;
+    padding:16px 0;
+    font-size:18px;
+}
+
+.sminusBig { background:#1b4f72; color:white; }
+.sminus { background:#2e86c1; color:white; }
+.splus { background:#27ae60; color:white; }
+.splusBig { background:#1e8449; color:white; }
+.szero { background:#7f8c8d; color:white; width:100%; margin-top:8px; }
 
 </style>
 </head>
 <body>
 
 <div class="container">
+
 <h2>❄ Snow Spot Logger (Eesti aeg)</h2>
 
-<label>Spot ID / Name</label>
+<label>Spot ID</label>
 <input type="text" id="station">
 
 <label>Date & Time (Eesti aeg)</label>
 <input type="datetime-local" id="datetime">
 
+<!-- SNOW -->
 <label>Snow Depth (cm)</label>
-<input type="number" id="snow" min="0" step="0.1">
+<input type="number" id="snow" min="0" step="0.1" class="snow-input">
 
-<label>Air Temperature (°C)</label>
-
-<div class="temp-container">
-
-    <input type="number" id="temp" min="-50" max="50" step="0.1" class="temp-input">
-
-    <div class="temp-buttons">
-        <button type="button" class="temp-btn minus-big" onclick="decreaseTemp(5)">-5</button>
-        <button type="button" class="temp-btn minus" onclick="decreaseTemp(1)">-1</button>
-        <button type="button" class="temp-btn plus" onclick="increaseTemp(1)">+1</button>
-        <button type="button" class="temp-btn plus-big" onclick="increaseTemp(5)">+5</button>
-    </div>
-
-    <div class="temp-sign">
-        <button type="button" class="temp-btn sign" onclick="makeNegative()">Make −</button>
-        <button type="button" class="temp-btn sign" onclick="makePositive()">Make +</button>
-    </div>
-
+<div class="snow-row">
+    <button class="snow-btn sminusBig" onclick="changeSnow(-10)">-10</button>
+    <button class="snow-btn sminus" onclick="changeSnow(-5)">-5</button>
+    <button class="snow-btn sminus" onclick="changeSnow(-1)">-1</button>
+    <button class="snow-btn splus" onclick="changeSnow(1)">+1</button>
+    <button class="snow-btn splus" onclick="changeSnow(5)">+5</button>
+    <button class="snow-btn splusBig" onclick="changeSnow(10)">+10</button>
 </div>
 
-<label>Notes (optional)</label>
+<button class="snow-btn szero" onclick="setSnowZero()">0 cm</button>
+
+<!-- TEMPERATURE -->
+<label>Air Temperature (°C)</label>
+<input type="number" id="temp" min="-50" max="50" step="0.1" class="temp-input">
+
+<div class="temp-row">
+    <button class="temp-btn tminusBig" onclick="changeTemp(-5)">-5</button>
+    <button class="temp-btn tminus" onclick="changeTemp(-1)">-1</button>
+    <button class="temp-btn tplus" onclick="changeTemp(1)">+1</button>
+    <button class="temp-btn tplusBig" onclick="changeTemp(5)">+5</button>
+</div>
+
+<div class="temp-row">
+    <button class="temp-btn tsign" onclick="makeNegative()">Make −</button>
+    <button class="temp-btn tsign" onclick="makePositive()">Make +</button>
+</div>
+
+<label>Notes</label>
 <textarea id="notes"></textarea>
 
-<div class="status" id="gpsStatus">
-GPS: waiting...
-</div>
+<div class="status" id="gpsStatus">GPS: waiting...</div>
 
 <button class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
-<button class="primary" style="background:#aaa;" onclick="clearForm()">Clear Form</button>
+<button class="secondary" onclick="clearForm()">Clear Form</button>
 <button class="clear" onclick="clearStored()">Clear Stored Data</button>
 <button class="export" onclick="exportCSV()">Export CSV</button>
 
@@ -150,7 +172,7 @@ GPS: waiting...
 <th>Temp</th>
 <th>Lat</th>
 <th>Lon</th>
-<th>Accuracy</th>
+<th>Acc</th>
 <th>Del</th>
 </tr>
 </thead>
@@ -161,162 +183,36 @@ GPS: waiting...
 
 <script>
 
+/* STORAGE */
 let records = JSON.parse(localStorage.getItem("snowSpots")) || [];
 
 function save() {
     localStorage.setItem("snowSpots", JSON.stringify(records));
 }
 
+/* TIME */
 function getLocalDatetimeString() {
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
     return new Date(now - offset).toISOString().slice(0,16);
 }
 
-function loadTable() {
-    const table = document.getElementById("tableBody");
-    table.innerHTML = "";
-
-    records.forEach((r, index) => {
-        const row = table.insertRow();
-        row.insertCell(0).innerText = r.station;
-        row.insertCell(1).innerText = r.ee;
-        row.insertCell(2).innerText = r.snow;
-        row.insertCell(3).innerText = r.temp;
-        row.insertCell(4).innerText = r.lat || "";
-        row.insertCell(5).innerText = r.lon || "";
-        row.insertCell(6).innerText = r.accuracy || "";
-
-        const delCell = row.insertCell(7);
-        const btn = document.createElement("button");
-        btn.innerText = "X";
-        btn.className = "delete-btn";
-        btn.onclick = () => deleteRecord(index);
-        delCell.appendChild(btn);
-    });
-}
-
-function addRecord() {
-
-    const station = document.getElementById("station").value.trim();
-    const localInput = document.getElementById("datetime").value;
-    const snow = document.getElementById("snow").value;
-    const temp = document.getElementById("temp").value;
-    const notes = document.getElementById("notes").value;
-
-    if (!station || !localInput || snow === "") {
-        alert("Spot ID, datetime and snow required.");
-        return;
-    }
-
-    const eeTime = localInput;
-    const utcTime = new Date(localInput).toISOString();
-
-    document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
-
-    navigator.geolocation.getCurrentPosition(
-        function(position) {
-
-            const lat = position.coords.latitude.toFixed(6);
-            const lon = position.coords.longitude.toFixed(6);
-            const acc = Math.round(position.coords.accuracy);
-
-            document.getElementById("gpsStatus").innerText =
-                `GPS OK: ${lat}, ${lon} (±${acc}m)`;
-
-            records.push({
-                station,
-                ee: eeTime,
-                utc: utcTime,
-                snow,
-                temp,
-                lat,
-                lon,
-                accuracy: acc,
-                notes
-            });
-
-            save();
-            loadTable();
-            clearForm();
-
-        },
-        function() {
-
-            alert("GPS failed. Spot saved without coordinates.");
-
-            records.push({
-                station,
-                ee: eeTime,
-                utc: utcTime,
-                snow,
-                temp,
-                notes
-            });
-
-            save();
-            loadTable();
-            clearForm();
-        },
-        {
-            enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 60000
-        }
-    );
-}
-
-function deleteRecord(index) {
-    records.splice(index, 1);
-    save();
-    loadTable();
-}
-
-function clearForm() {
-    document.getElementById("station").value = "";
-    document.getElementById("datetime").value = getLocalDatetimeString();
-    document.getElementById("snow").value = "";
-    document.getElementById("temp").value = "";
-    document.getElementById("notes").value = "";
-}
-
-function clearStored() {
-    if (!confirm("Delete ALL stored spots?")) return;
-    records = [];
-    localStorage.removeItem("snowSpots");
-    document.getElementById("tableBody").innerHTML = "";
-}
-
-function exportCSV() {
-
-    if (records.length === 0) {
-        alert("No data to export.");
-        return;
-    }
-
-    let csv = "SpotID;DateTime_EE;DateTime_UTC;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
-
-    records.forEach(r => {
-        csv += `${r.station};${r.ee};${r.utc};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""};${r.notes || ""}\n`;
-    });
-
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "snow_spots_" + new Date().toISOString().slice(0,10) + ".csv";
-    link.click();
-}
-
-/* Temperature controls */
-
-function decreaseTemp(step) {
-    const input = document.getElementById("temp");
+/* SNOW */
+function changeSnow(step) {
+    const input = document.getElementById("snow");
     let value = parseFloat(input.value);
     if (isNaN(value)) value = 0;
-    input.value = (value - step).toFixed(1);
+    value += step;
+    if (value < 0) value = 0;
+    input.value = value.toFixed(1);
 }
 
-function increaseTemp(step) {
+function setSnowZero() {
+    document.getElementById("snow").value = 0;
+}
+
+/* TEMP */
+function changeTemp(step) {
     const input = document.getElementById("temp");
     let value = parseFloat(input.value);
     if (isNaN(value)) value = 0;
@@ -335,6 +231,126 @@ function makePositive() {
     input.value = Math.abs(parseFloat(input.value));
 }
 
+/* TABLE */
+function loadTable() {
+    const table = document.getElementById("tableBody");
+    table.innerHTML = "";
+
+    records.forEach((r, index) => {
+        const row = table.insertRow();
+        row.insertCell(0).innerText = r.station;
+        row.insertCell(1).innerText = r.ee;
+        row.insertCell(2).innerText = r.snow;
+        row.insertCell(3).innerText = r.temp;
+        row.insertCell(4).innerText = r.lat || "";
+        row.insertCell(5).innerText = r.lon || "";
+        row.insertCell(6).innerText = r.acc || "";
+
+        const del = row.insertCell(7);
+        const btn = document.createElement("button");
+        btn.innerText = "X";
+        btn.onclick = () => {
+            records.splice(index,1);
+            save();
+            loadTable();
+        };
+        del.appendChild(btn);
+    });
+}
+
+/* ADD RECORD */
+function addRecord() {
+
+    const station = document.getElementById("station").value.trim();
+    const eeTime = document.getElementById("datetime").value;
+    const snow = document.getElementById("snow").value;
+    const temp = document.getElementById("temp").value;
+    const notes = document.getElementById("notes").value;
+
+    if (!station || !eeTime || snow === "") {
+        alert("Spot, datetime and snow required.");
+        return;
+    }
+
+    const utcTime = new Date(eeTime).toISOString();
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const lat = pos.coords.latitude.toFixed(6);
+            const lon = pos.coords.longitude.toFixed(6);
+            const acc = Math.round(pos.coords.accuracy);
+
+            records.push({
+                station,
+                ee: eeTime,
+                utc: utcTime,
+                snow,
+                temp,
+                lat,
+                lon,
+                acc,
+                notes
+            });
+
+            save();
+            loadTable();
+            clearForm();
+        },
+        () => {
+            records.push({
+                station,
+                ee: eeTime,
+                utc: utcTime,
+                snow,
+                temp,
+                notes
+            });
+
+            save();
+            loadTable();
+            clearForm();
+        }
+    );
+}
+
+/* CLEAR */
+function clearForm() {
+    document.getElementById("station").value = "";
+    document.getElementById("datetime").value = getLocalDatetimeString();
+    document.getElementById("snow").value = "";
+    document.getElementById("temp").value = "";
+    document.getElementById("notes").value = "";
+}
+
+function clearStored() {
+    if (!confirm("Delete ALL data?")) return;
+    records = [];
+    localStorage.removeItem("snowSpots");
+    loadTable();
+}
+
+/* CSV */
+function exportCSV() {
+
+    if (records.length === 0) {
+        alert("No data.");
+        return;
+    }
+
+    let csv = "SpotID;DateTime_EE;DateTime_UTC;Snow_cm;Temp_C;Lat;Lon;Accuracy;Notes\n";
+
+    records.forEach(r => {
+        csv += `${r.station};${r.ee};${r.utc};${r.snow};${r.temp};${r.lat||""};${r.lon||""};${r.acc||""};${r.notes||""}\n`;
+    });
+
+    const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "snow_spots_"+new Date().toISOString().slice(0,10)+".csv";
+    link.click();
+}
+
+/* INIT */
 document.getElementById("datetime").value = getLocalDatetimeString();
 loadTable();
 
