@@ -55,6 +55,44 @@ th { background:#2d6cdf; color:white; }
     padding:5px 8px;
     border-radius:6px;
 }
+
+/* Temperature Big Buttons */
+
+.temp-container { margin-top: 8px; }
+
+.temp-input {
+    width: 100%;
+    font-size: 26px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.temp-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.temp-sign {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.temp-btn {
+    flex: 1;
+    font-size: 22px;
+    padding: 20px 0;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.minus-big { background: #0b3d91; color: white; }
+.minus { background: #3b6edb; color: white; }
+.plus { background: #e67e22; color: white; }
+.plus-big { background: #c0392b; color: white; }
+.sign { background: #555; color: white; }
+
 </style>
 </head>
 <body>
@@ -73,17 +111,22 @@ th { background:#2d6cdf; color:white; }
 
 <label>Air Temperature (°C)</label>
 
-<div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
-    <input type="number" id="temp" min="-50" max="50" step="0.1">
+<div class="temp-container">
 
-    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" onclick="makeNegative()">➖</button>
-        <button type="button" onclick="makePositive()">➕</button>
-        <button type="button" onclick="decreaseTemp(1)">-1</button>
-        <button type="button" onclick="increaseTemp(1)">+1</button>
-        <button type="button" onclick="decreaseTemp(5)">-5</button>
-        <button type="button" onclick="increaseTemp(5)">+5</button>
+    <input type="number" id="temp" min="-50" max="50" step="0.1" class="temp-input">
+
+    <div class="temp-buttons">
+        <button type="button" class="temp-btn minus-big" onclick="decreaseTemp(5)">-5</button>
+        <button type="button" class="temp-btn minus" onclick="decreaseTemp(1)">-1</button>
+        <button type="button" class="temp-btn plus" onclick="increaseTemp(1)">+1</button>
+        <button type="button" class="temp-btn plus-big" onclick="increaseTemp(5)">+5</button>
     </div>
+
+    <div class="temp-sign">
+        <button type="button" class="temp-btn sign" onclick="makeNegative()">Make −</button>
+        <button type="button" class="temp-btn sign" onclick="makePositive()">Make +</button>
+    </div>
+
 </div>
 
 <label>Notes (optional)</label>
@@ -266,18 +309,6 @@ function exportCSV() {
 
 /* Temperature controls */
 
-function makeNegative() {
-    const input = document.getElementById("temp");
-    if (input.value === "") return;
-    input.value = -Math.abs(parseFloat(input.value));
-}
-
-function makePositive() {
-    const input = document.getElementById("temp");
-    if (input.value === "") return;
-    input.value = Math.abs(parseFloat(input.value));
-}
-
 function decreaseTemp(step) {
     const input = document.getElementById("temp");
     let value = parseFloat(input.value);
@@ -290,6 +321,18 @@ function increaseTemp(step) {
     let value = parseFloat(input.value);
     if (isNaN(value)) value = 0;
     input.value = (value + step).toFixed(1);
+}
+
+function makeNegative() {
+    const input = document.getElementById("temp");
+    if (input.value === "") return;
+    input.value = -Math.abs(parseFloat(input.value));
+}
+
+function makePositive() {
+    const input = document.getElementById("temp");
+    if (input.value === "") return;
+    input.value = Math.abs(parseFloat(input.value));
 }
 
 document.getElementById("datetime").value = getLocalDatetimeString();
