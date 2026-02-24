@@ -14,66 +14,131 @@ body {
     margin: 0;
     padding: 15px;
 }
+
 .container {
     max-width: 900px;
     margin: auto;
     background: white;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 }
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    margin-top: 15px;
+    display: block;
+}
+
 input, textarea {
     width: 100%;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 14px;
+    border-radius: 10px;
     border: 1px solid #ccc;
     font-size: 18px;
-    margin-top: 8px;
+    margin-top: 6px;
 }
+
+.big-input {
+    font-size: 28px;
+    text-align: center;
+    font-weight: bold;
+}
+
 button {
     border: none;
-    cursor: pointer;
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: bold;
-    padding: 14px;
+    cursor: pointer;
 }
-.primary { background:#2d6cdf; color:white; width:100%; margin-top:10px;}
-.export { background:#27ae60; color:white; width:100%; margin-top:10px;}
-.clear { background:#c0392b; color:white; width:100%; margin-top:10px;}
-.secondary { background:#aaa; color:white; width:100%; margin-top:10px;}
 
-.status { margin-top:10px; font-size:14px; color:#555; }
+.row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.row button {
+    flex: 1;
+    padding: 18px 0;
+    font-size: 20px;
+}
+
+/* Snow buttons */
+.snow-minus-big { background:#1b4f72; color:white; }
+.snow-minus { background:#2e86c1; color:white; }
+.snow-plus { background:#27ae60; color:white; }
+.snow-plus-big { background:#1e8449; color:white; }
+.snow-zero { background:#7f8c8d; color:white; width:100%; margin-top:8px; padding:16px; }
+
+/* Temp buttons */
+.temp-minus-big { background:#0b3d91; color:white; }
+.temp-minus { background:#3b6edb; color:white; }
+.temp-plus { background:#e67e22; color:white; }
+.temp-plus-big { background:#c0392b; color:white; }
+.temp-sign { background:#555; color:white; }
+
+.primary {
+    background:#2d6cdf;
+    color:white;
+    width:100%;
+    padding:16px;
+    margin-top:14px;
+    font-size:18px;
+}
+
+.secondary {
+    background:#aaa;
+    color:white;
+    width:100%;
+    padding:16px;
+    margin-top:10px;
+}
+
+.clear {
+    background:#c0392b;
+    color:white;
+    width:100%;
+    padding:16px;
+    margin-top:10px;
+}
+
+.export {
+    background:#27ae60;
+    color:white;
+    width:100%;
+    padding:16px;
+    margin-top:10px;
+}
+
+.status {
+    margin-top:12px;
+    font-size:14px;
+    color:#555;
+}
 
 table {
     width:100%;
     border-collapse: collapse;
-    margin-top:20px;
+    margin-top:25px;
     font-size:13px;
 }
+
 th, td {
     border:1px solid #ddd;
     padding:6px;
     text-align:center;
 }
-th { background:#2d6cdf; color:white; }
 
-/* SNOW + TEMP layout */
-
-.row {
-    display:flex;
-    gap:6px;
-    margin-top:10px;
-    flex-wrap:wrap;
-}
-
-.row button {
-    flex:1;
-}
-
-.big-input {
-    font-size:26px;
-    text-align:center;
-    font-weight:bold;
+th {
+    background:#2d6cdf;
+    color:white;
 }
 </style>
 </head>
@@ -95,30 +160,30 @@ th { background:#2d6cdf; color:white; }
 <input type="number" id="snow" min="0" step="0.1" class="big-input">
 
 <div class="row">
-    <button onclick="changeSnow(-10)">-10</button>
-    <button onclick="changeSnow(-5)">-5</button>
-    <button onclick="changeSnow(-1)">-1</button>
-    <button onclick="changeSnow(1)">+1</button>
-    <button onclick="changeSnow(5)">+5</button>
-    <button onclick="changeSnow(10)">+10</button>
+    <button class="snow-minus-big" onclick="changeSnow(-10)">-10</button>
+    <button class="snow-minus" onclick="changeSnow(-5)">-5</button>
+    <button class="snow-minus" onclick="changeSnow(-1)">-1</button>
+    <button class="snow-plus" onclick="changeSnow(1)">+1</button>
+    <button class="snow-plus" onclick="changeSnow(5)">+5</button>
+    <button class="snow-plus-big" onclick="changeSnow(10)">+10</button>
 </div>
 
-<button onclick="setSnowZero()">0 cm</button>
+<button class="snow-zero" onclick="setSnowZero()">0 cm</button>
 
 <!-- TEMP -->
 <label>Air Temperature (°C)</label>
 <input type="number" id="temp" min="-50" max="50" step="0.1" class="big-input">
 
 <div class="row">
-    <button onclick="changeTemp(-5)">-5</button>
-    <button onclick="changeTemp(-1)">-1</button>
-    <button onclick="changeTemp(1)">+1</button>
-    <button onclick="changeTemp(5)">+5</button>
+    <button class="temp-minus-big" onclick="changeTemp(-5)">-5</button>
+    <button class="temp-minus" onclick="changeTemp(-1)">-1</button>
+    <button class="temp-plus" onclick="changeTemp(1)">+1</button>
+    <button class="temp-plus-big" onclick="changeTemp(5)">+5</button>
 </div>
 
 <div class="row">
-    <button onclick="makeNegative()">Make −</button>
-    <button onclick="makePositive()">Make +</button>
+    <button class="temp-sign" onclick="makeNegative()">Make −</button>
+    <button class="temp-sign" onclick="makePositive()">Make +</button>
 </div>
 
 <label>Notes</label>
@@ -149,10 +214,8 @@ th { background:#2d6cdf; color:white; }
 
 </div>
 
-<!-- EXTERNAL JS -->
 <script src="app.js"></script>
 
-<!-- SERVICE WORKER REGISTRATION -->
 <script>
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js");
