@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Snow Spot Logger</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -14,135 +12,95 @@ body {
     margin: 0;
     padding: 15px;
 }
-
 .container {
     max-width: 900px;
     margin: auto;
     background: white;
     padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-label {
-    font-weight: bold;
-    margin-top: 15px;
-    display: block;
-}
-
 input, textarea {
     width: 100%;
-    padding: 14px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 18px;
-    margin-top: 6px;
+    margin-top: 8px;
 }
-
-.big-input {
-    font-size: 28px;
-    text-align: center;
-    font-weight: bold;
-}
-
 button {
     border: none;
-    border-radius: 12px;
-    font-weight: bold;
     cursor: pointer;
+    border-radius: 10px;
+    font-weight: bold;
 }
 
-.row {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    flex-wrap: wrap;
-}
+.primary { background:#2d6cdf; color:white; width:100%; padding:14px; margin-top:10px;}
+.export { background:#27ae60; color:white; width:100%; padding:14px; margin-top:10px;}
+.clear { background:#c0392b; color:white; width:100%; padding:14px; margin-top:10px;}
+.secondary { background:#aaa; color:white; width:100%; padding:14px; margin-top:10px;}
 
-.row button {
-    flex: 1;
-    padding: 18px 0;
-    font-size: 20px;
-}
-
-/* Snow buttons */
-.snow-minus-big { background:#1b4f72; color:white; }
-.snow-minus { background:#2e86c1; color:white; }
-.snow-plus { background:#27ae60; color:white; }
-.snow-plus-big { background:#1e8449; color:white; }
-.snow-zero { background:#7f8c8d; color:white; width:100%; margin-top:8px; padding:16px; }
-
-/* Temp buttons */
-.temp-minus-big { background:#0b3d91; color:white; }
-.temp-minus { background:#3b6edb; color:white; }
-.temp-plus { background:#e67e22; color:white; }
-.temp-plus-big { background:#c0392b; color:white; }
-.temp-sign { background:#555; color:white; }
-
-.primary {
-    background:#2d6cdf;
-    color:white;
-    width:100%;
-    padding:16px;
-    margin-top:14px;
-    font-size:18px;
-}
-
-.secondary {
-    background:#aaa;
-    color:white;
-    width:100%;
-    padding:16px;
-    margin-top:10px;
-}
-
-.clear {
-    background:#c0392b;
-    color:white;
-    width:100%;
-    padding:16px;
-    margin-top:10px;
-}
-
-.export {
-    background:#27ae60;
-    color:white;
-    width:100%;
-    padding:16px;
-    margin-top:10px;
-}
-
-.status {
-    margin-top:12px;
-    font-size:14px;
-    color:#555;
-}
+.status { margin-top:10px; font-size:14px; color:#555; }
 
 table {
     width:100%;
     border-collapse: collapse;
-    margin-top:25px;
+    margin-top:20px;
     font-size:13px;
 }
-
 th, td {
     border:1px solid #ddd;
     padding:6px;
     text-align:center;
 }
+th { background:#2d6cdf; color:white; }
 
-th {
-    background:#2d6cdf;
-    color:white;
+/* TEMPERATURE */
+.temp-input {
+    font-size:26px;
+    text-align:center;
+    font-weight:bold;
 }
+.temp-row {
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+}
+.temp-btn {
+    flex:1;
+    padding:18px 0;
+    font-size:20px;
+}
+.tminusBig { background:#0b3d91; color:white; }
+.tminus { background:#3b6edb; color:white; }
+.tplus { background:#e67e22; color:white; }
+.tplusBig { background:#c0392b; color:white; }
+.tsign { background:#555; color:white; }
+
+/* SNOW */
+.snow-input {
+    font-size:26px;
+    text-align:center;
+    font-weight:bold;
+}
+.snow-row {
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+.snow-btn {
+    flex:1;
+    padding:16px 0;
+    font-size:18px;
+}
+.sminusBig { background:#1b4f72; color:white; }
+.sminus { background:#2e86c1; color:white; }
+.splus { background:#27ae60; color:white; }
+.splusBig { background:#1e8449; color:white; }
+.szero { background:#7f8c8d; color:white; width:100%; margin-top:8px; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -155,35 +113,33 @@ th {
 <label>Date & Time (Eesti aeg)</label>
 <input type="datetime-local" id="datetime">
 
-<!-- SNOW -->
 <label>Snow Depth (cm)</label>
-<input type="number" id="snow" min="0" step="0.1" class="big-input">
+<input type="number" id="snow" min="0" step="0.1" class="snow-input">
 
-<div class="row">
-    <button class="snow-minus-big" onclick="changeSnow(-10)">-10</button>
-    <button class="snow-minus" onclick="changeSnow(-5)">-5</button>
-    <button class="snow-minus" onclick="changeSnow(-1)">-1</button>
-    <button class="snow-plus" onclick="changeSnow(1)">+1</button>
-    <button class="snow-plus" onclick="changeSnow(5)">+5</button>
-    <button class="snow-plus-big" onclick="changeSnow(10)">+10</button>
+<div class="snow-row">
+    <button type="button" class="snow-btn sminusBig" onclick="changeSnow(-10)">-10</button>
+    <button type="button" class="snow-btn sminus" onclick="changeSnow(-5)">-5</button>
+    <button type="button" class="snow-btn sminus" onclick="changeSnow(-1)">-1</button>
+    <button type="button" class="snow-btn splus" onclick="changeSnow(1)">+1</button>
+    <button type="button" class="snow-btn splus" onclick="changeSnow(5)">+5</button>
+    <button type="button" class="snow-btn splusBig" onclick="changeSnow(10)">+10</button>
 </div>
 
-<button class="snow-zero" onclick="setSnowZero()">0 cm</button>
+<button type="button" class="snow-btn szero" onclick="setSnowZero()">0 cm</button>
 
-<!-- TEMP -->
 <label>Air Temperature (°C)</label>
-<input type="number" id="temp" min="-50" max="50" step="0.1" class="big-input">
+<input type="number" id="temp" min="-50" max="50" step="0.1" class="temp-input">
 
-<div class="row">
-    <button class="temp-minus-big" onclick="changeTemp(-5)">-5</button>
-    <button class="temp-minus" onclick="changeTemp(-1)">-1</button>
-    <button class="temp-plus" onclick="changeTemp(1)">+1</button>
-    <button class="temp-plus-big" onclick="changeTemp(5)">+5</button>
+<div class="temp-row">
+    <button type="button" class="temp-btn tminusBig" onclick="changeTemp(-5)">-5</button>
+    <button type="button" class="temp-btn tminus" onclick="changeTemp(-1)">-1</button>
+    <button type="button" class="temp-btn tplus" onclick="changeTemp(1)">+1</button>
+    <button type="button" class="temp-btn tplusBig" onclick="changeTemp(5)">+5</button>
 </div>
 
-<div class="row">
-    <button class="temp-sign" onclick="makeNegative()">Make −</button>
-    <button class="temp-sign" onclick="makePositive()">Make +</button>
+<div class="temp-row">
+    <button type="button" class="temp-btn tsign" onclick="makeNegative()">Make −</button>
+    <button type="button" class="temp-btn tsign" onclick="makePositive()">Make +</button>
 </div>
 
 <label>Notes</label>
@@ -191,10 +147,10 @@ th {
 
 <div class="status" id="gpsStatus">GPS: waiting...</div>
 
-<button class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
-<button class="secondary" onclick="clearForm()">Clear Form</button>
-<button class="clear" onclick="clearStored()">Clear Stored Data</button>
-<button class="export" onclick="exportCSV()">Export CSV</button>
+<button type="button" class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
+<button type="button" class="secondary" onclick="clearForm()">Clear Form</button>
+<button type="button" class="clear" onclick="clearStored()">Clear Stored Data</button>
+<button type="button" class="export" onclick="exportCSV()">Export CSV</button>
 
 <table>
 <thead>
@@ -214,12 +170,163 @@ th {
 
 </div>
 
-<script src="app.js"></script>
-
 <script>
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
+
+let records = JSON.parse(localStorage.getItem("snowSpots")) || [];
+
+function save() {
+    localStorage.setItem("snowSpots", JSON.stringify(records));
 }
+
+function getLocalDatetimeString() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now - offset).toISOString().slice(0,16);
+}
+
+/* SNOW */
+function changeSnow(step) {
+    const input = document.getElementById("snow");
+    let value = parseFloat(input.value);
+    if (isNaN(value)) value = 0;
+    value += step;
+    if (value < 0) value = 0;
+    input.value = value.toFixed(1);
+}
+
+function setSnowZero() {
+    document.getElementById("snow").value = 0;
+}
+
+/* TEMP */
+function changeTemp(step) {
+    const input = document.getElementById("temp");
+    let value = parseFloat(input.value);
+    if (isNaN(value)) value = 0;
+    input.value = (value + step).toFixed(1);
+}
+
+function makeNegative() {
+    const input = document.getElementById("temp");
+    if (input.value === "") return;
+    input.value = -Math.abs(parseFloat(input.value));
+}
+
+function makePositive() {
+    const input = document.getElementById("temp");
+    if (input.value === "") return;
+    input.value = Math.abs(parseFloat(input.value));
+}
+
+/* TABLE */
+function loadTable() {
+    const table = document.getElementById("tableBody");
+    table.innerHTML = "";
+
+    records.forEach((r, index) => {
+        const row = table.insertRow();
+        row.insertCell(0).innerText = r.station || "";
+        row.insertCell(1).innerText = r.ee || "";
+        row.insertCell(2).innerText = r.snow || "";
+        row.insertCell(3).innerText = r.temp || "";
+        row.insertCell(4).innerText = r.lat || "";
+        row.insertCell(5).innerText = r.lon || "";
+        row.insertCell(6).innerText = r.acc || "";
+
+        const del = row.insertCell(7);
+        const btn = document.createElement("button");
+        btn.innerText = "X";
+        btn.style.background = "#e74c3c";
+        btn.style.color = "white";
+        btn.style.border = "none";
+        btn.style.padding = "6px 8px";
+        btn.style.borderRadius = "6px";
+        btn.onclick = () => {
+            records.splice(index,1);
+            save();
+            loadTable();
+        };
+        del.appendChild(btn);
+    });
+}
+
+/* ADD */
+function addRecord() {
+
+    const station = document.getElementById("station").value.trim();
+    const eeTime = document.getElementById("datetime").value;
+    const snow = document.getElementById("snow").value;
+    const temp = document.getElementById("temp").value;
+    const notes = document.getElementById("notes").value;
+
+    if (!station || !eeTime || snow === "") {
+        alert("Spot, datetime and snow required.");
+        return;
+    }
+
+    const utcTime = new Date(eeTime).toISOString();
+    const gpsStatus = document.getElementById("gpsStatus");
+    gpsStatus.innerText = "GPS: acquiring...";
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const lat = pos.coords.latitude.toFixed(6);
+            const lon = pos.coords.longitude.toFixed(6);
+            const acc = Math.round(pos.coords.accuracy);
+
+            gpsStatus.innerText = `GPS OK: ${lat}, ${lon} (±${acc}m)`;
+
+            records.push({station, ee:eeTime, utc:utcTime, snow, temp, lat, lon, acc, notes});
+            save();
+            loadTable();
+            clearForm();
+        },
+        () => {
+            gpsStatus.innerText = "GPS failed (saved without coords)";
+            records.push({station, ee:eeTime, utc:utcTime, snow, temp, notes});
+            save();
+            loadTable();
+            clearForm();
+        },
+        { enableHighAccuracy:false, timeout:10000, maximumAge:60000 }
+    );
+}
+
+function clearForm() {
+    document.getElementById("station").value = "";
+    document.getElementById("datetime").value = getLocalDatetimeString();
+    document.getElementById("snow").value = "";
+    document.getElementById("temp").value = "";
+    document.getElementById("notes").value = "";
+}
+
+function clearStored() {
+    if (!confirm("Delete ALL data?")) return;
+    records = [];
+    localStorage.removeItem("snowSpots");
+    loadTable();
+}
+
+function exportCSV() {
+    if (!records.length) return alert("No data.");
+
+    let csv = "SpotID;DateTime_EE;DateTime_UTC;Snow_cm;Temp_C;Lat;Lon;Accuracy;Notes\n";
+    records.forEach(r => {
+        csv += `${r.station};${r.ee};${r.utc};${r.snow};${r.temp};${r.lat||""};${r.lon||""};${r.acc||""};${r.notes||""}\n`;
+    });
+
+    const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "snow_spots_"+new Date().toISOString().slice(0,10)+".csv";
+    link.click();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("datetime").value = getLocalDatetimeString();
+    loadTable();
+});
+
 </script>
 
 </body>
