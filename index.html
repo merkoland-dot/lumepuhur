@@ -70,7 +70,7 @@ th { background: #2d6cdf; color: white; }
 <h2>❄ Snow Spot Logger (Auto GPS)</h2>
 
 <label>Spot ID / Name</label>
-<input type="text" id="station" placeholder="e.g. FIELD_A_01">
+<input type="text" id="station">
 
 <label>Date & Time</label>
 <input type="datetime-local" id="datetime">
@@ -89,8 +89,9 @@ GPS: waiting...
 </div>
 
 <button class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
+<button onclick="clearForm()">Clear Form</button>
+<button class="clear" onclick="clearStored()">Clear Stored Data</button>
 <button class="export" onclick="exportCSV()">Export CSV</button>
-<button class="clear" onclick="clearAll()">Clear All</button>
 
 <table>
 <thead>
@@ -101,7 +102,7 @@ GPS: waiting...
 <th>Temp</th>
 <th>Lat</th>
 <th>Lon</th>
-<th>Accuracy</th>
+<th>Accuracy (m)</th>
 <th>Del</th>
 </tr>
 </thead>
@@ -111,6 +112,7 @@ GPS: waiting...
 </div>
 
 <script>
+
 let records = JSON.parse(localStorage.getItem("snowSpots")) || [];
 
 function save() {
@@ -141,6 +143,7 @@ function loadTable() {
 }
 
 function addRecord() {
+
     const station = document.getElementById("station").value.trim();
     const datetime = document.getElementById("datetime").value;
     const snow = document.getElementById("snow").value;
@@ -154,48 +157,57 @@ function addRecord() {
 
     document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
 
-    navigator.geolocation.getCurrentPosition(position => {
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
 
-        const lat = position.coords.latitude.toFixed(6);
-        const lon = position.coords.longitude.toFixed(6);
-        const acc = Math.round(position.coords.accuracy);
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+            const acc = Math.round(position.coords.accuracy);
 
-        document.getElementById("gpsStatus").innerText =
-            `GPS: ${lat}, ${lon} (±${acc}m)`;
+            document.getElementById("gpsStatus").innerText =
+                `GPS OK: ${lat}, ${lon} (±${acc}m)`;
 
-        records.push({
-            station,
-            datetime,
-            snow,
-            temp,
-            lat,
-            lon,
-            accuracy: acc,
-            notes
-        });
+            records.push({
+                station,
+                datetime,
+                snow,
+                temp,
+                lat,
+                lon,
+                accuracy: acc,
+                notes
+            });
 
-        save();
-        loadTable();
+            save();
+            loadTable();
 
-    }, error => {
-        document.getElementById("gpsStatus").innerText =
-            "GPS error: " + error.message;
+            clearForm();
 
-        alert("GPS failed. Spot saved without coordinates.");
+        },
+        function(error) {
+            document.getElementById("gpsStatus").innerText =
+                "GPS ERROR: " + error.message;
 
-        records.push({
-            station,
-            datetime,
-            snow,
-            temp,
-            notes
-        });
+            alert("GPS failed. Spot saved without coordinates.");
 
-        save();
-        loadTable();
-    }, {
-        enableHighAccuracy: true
-    });
+            records.push({
+                station,
+                datetime,
+                snow,
+                temp,
+                notes
+            });
+
+            save();
+            loadTable();
+            clearForm();
+        },
+        {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 60000
+        }
+    );
 }
 
 function deleteRecord(index) {
@@ -204,15 +216,33 @@ function deleteRecord(index) {
     loadTable();
 }
 
-function clearAll() {
-    if (!confirm("Delete all spots?")) return;
+function clearForm() {
+
+    document.getElementById("station").value = "";
+    document.getElementById("datetime").value =
+        new Date().toISOString().slice(0,16);
+    document.getElementById("snow").value = "";
+    document.getElementById("temp").value = "";
+    document.getElementById("notes").value = "";
+
+}
+
+function clearStored() {
+
+    if (!confirm("Delete ALL stored spots?")) return;
+
     records = [];
-    save();
-    loadTable();
+    localStorage.removeItem("snowSpots");
+    document.getElementById("tableBody").innerHTML = "";
+    document.getElementById("gpsStatus").innerText = "Stored data cleared.";
 }
 
 function exportCSV() {
-    if (records.length === 0) return;
+
+    if (records.length === 0) {
+        alert("No data to export.");
+        return;
+    }
 
     let csv = "SpotID;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
 
@@ -231,6 +261,7 @@ document.getElementById("datetime").value =
     new Date().toISOString().slice(0,16);
 
 loadTable();
+
 </script>
 
 </body>
