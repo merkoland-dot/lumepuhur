@@ -67,19 +67,19 @@ th { background: #2d6cdf; color: white; }
 <body>
 
 <div class="container">
-<h2>❄ Snow Spot Logger (Auto GPS)</h2>
+<h2>❄ Snow Spot Logger (EE Time + UTC)</h2>
 
 <label>Spot ID / Name</label>
 <input type="text" id="station">
 
-<label>Date & Time</label>
+<label>Date & Time (Local)</label>
 <input type="datetime-local" id="datetime">
 
 <label>Snow Depth (cm)</label>
 <input type="number" id="snow" min="0" step="0.1">
 
 <label>Air Temperature (°C)</label>
-<input type="number" id="temp" step="0.1">
+<input type="number" id="temp" min="-50" max="50" step="0.1">
 
 <label>Notes (optional)</label>
 <textarea id="notes"></textarea>
@@ -97,12 +97,13 @@ GPS: waiting...
 <thead>
 <tr>
 <th>Spot</th>
-<th>DateTime</th>
+<th>UTC</th>
+<th>EE Time</th>
 <th>Snow</th>
 <th>Temp</th>
 <th>Lat</th>
 <th>Lon</th>
-<th>Accuracy (m)</th>
+<th>Acc</th>
 <th>Del</th>
 </tr>
 </thead>
@@ -119,6 +120,12 @@ function save() {
     localStorage.setItem("snowSpots", JSON.stringify(records));
 }
 
+function formatEstonianTime(dateObj) {
+    return dateObj.toLocaleString("sv-SE", {
+        timeZone: "Europe/Tallinn"
+    }).replace(" ", "T");
+}
+
 function loadTable() {
     const table = document.getElementById("tableBody");
     table.innerHTML = "";
@@ -126,14 +133,15 @@ function loadTable() {
     records.forEach((r, index) => {
         const row = table.insertRow();
         row.insertCell(0).innerText = r.station;
-        row.insertCell(1).innerText = r.datetime;
-        row.insertCell(2).innerText = r.snow;
-        row.insertCell(3).innerText = r.temp;
-        row.insertCell(4).innerText = r.lat || "";
-        row.insertCell(5).innerText = r.lon || "";
-        row.insertCell(6).innerText = r.accuracy || "";
+        row.insertCell(1).innerText = r.utc;
+        row.insertCell(2).innerText = r.ee;
+        row.insertCell(3).innerText = r.snow;
+        row.insertCell(4).innerText = r.temp;
+        row.insertCell(5).innerText = r.lat || "";
+        row.insertCell(6).innerText = r.lon || "";
+        row.insertCell(7).innerText = r.accuracy || "";
 
-        const delCell = row.insertCell(7);
+        const delCell = row.insertCell(8);
         const btn = document.createElement("button");
         btn.innerText = "X";
         btn.className = "delete-btn";
@@ -145,15 +153,19 @@ function loadTable() {
 function addRecord() {
 
     const station = document.getElementById("station").value.trim();
-    const datetime = document.getElementById("datetime").value;
+    const localInput = document.getElementById("datetime").value;
     const snow = document.getElementById("snow").value;
     const temp = document.getElementById("temp").value;
     const notes = document.getElementById("notes").value;
 
-    if (!station || !datetime || snow === "") {
+    if (!station || !localInput || snow === "") {
         alert("Spot ID, datetime and snow required.");
         return;
     }
+
+    const dateObj = new Date(localInput);
+    const utcTime = dateObj.toISOString();
+    const eeTime = formatEstonianTime(dateObj);
 
     document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
 
@@ -169,7 +181,8 @@ function addRecord() {
 
             records.push({
                 station,
-                datetime,
+                utc: utcTime,
+                ee: eeTime,
                 snow,
                 temp,
                 lat,
@@ -180,19 +193,16 @@ function addRecord() {
 
             save();
             loadTable();
-
             clearForm();
 
         },
         function(error) {
-            document.getElementById("gpsStatus").innerText =
-                "GPS ERROR: " + error.message;
-
             alert("GPS failed. Spot saved without coordinates.");
 
             records.push({
                 station,
-                datetime,
+                utc: utcTime,
+                ee: eeTime,
                 snow,
                 temp,
                 notes
@@ -217,24 +227,19 @@ function deleteRecord(index) {
 }
 
 function clearForm() {
-
     document.getElementById("station").value = "";
     document.getElementById("datetime").value =
         new Date().toISOString().slice(0,16);
     document.getElementById("snow").value = "";
     document.getElementById("temp").value = "";
     document.getElementById("notes").value = "";
-
 }
 
 function clearStored() {
-
     if (!confirm("Delete ALL stored spots?")) return;
-
     records = [];
     localStorage.removeItem("snowSpots");
     document.getElementById("tableBody").innerHTML = "";
-    document.getElementById("gpsStatus").innerText = "Stored data cleared.";
 }
 
 function exportCSV() {
@@ -244,10 +249,10 @@ function exportCSV() {
         return;
     }
 
-    let csv = "SpotID;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
+    let csv = "SpotID;DateTime_UTC;DateTime_EE;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
 
     records.forEach(r => {
-        csv += `${r.station};${r.datetime};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""};${r.notes || ""}\n`;
+        csv += `${r.station};${r.utc};${r.ee};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""};${r.notes || ""}\n`;
     });
 
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
