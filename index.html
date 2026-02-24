@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snow Route Logger</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#2d6cdf">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eef3f9;
+    margin: 0;
+    padding: 15px;
+}
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+button {
+    border: none;
+    cursor: pointer;
+}
+.primary { background: #2d6cdf; color: white; }
+.export { background: #27ae60; color: white; }
+.clear { background: #c0392b; color: white; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 12px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+}
+th { background: #2d6cdf; color: white; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>❄ Snow Route Logger</h2>
+
+<label>Route ID</label>
+<input type="text" id="routeId">
+
+<label>Snow Depth (cm)</label>
+<input type="number" id="snow" step="0.1">
+
+<label>Air Temp (°C)</label>
+<input type="number" id="temp" step="0.1">
+
+<button class="primary" onclick="addPoint()">Add Measurement</button>
+<button class="export" onclick="exportCSV()">Export CSV</button>
+<button class="clear" onclick="clearAll()">Clear Route</button>
+
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>DateTime</th>
+<th>Snow</th>
+<th>Temp</th>
+<th>Lat</th>
+<th>Lon</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+
+<script>
+let routePoints = JSON.parse(localStorage.getItem("routeData")) || [];
+let pointCounter = routePoints.length;
+
+function save() {
+    localStorage.setItem("routeData", JSON.stringify(routePoints));
+}
+
+function loadTable() {
+    const table = document.getElementById("tableBody");
+    table.innerHTML = "";
+    routePoints.forEach(p => {
+        const row = table.insertRow();
+        row.insertCell(0).innerText = p.point;
+        row.insertCell(1).innerText = p.datetime;
+        row.insertCell(2).innerText = p.snow;
+        row.insertCell(3).innerText = p.temp;
+        row.insertCell(4).innerText = p.lat;
+        row.insertCell(5).innerText = p.lon;
+    });
+}
+
+function addPoint() {
+    const routeId = document.getElementById("routeId").value;
+    const snow = document.getElementById("snow").value;
+    const temp = document.getElementById("temp").value;
+
+    if (!routeId || snow === "") {
+        alert("Route ID and snow required.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(position => {
+
+        pointCounter++;
+
+        const pointData = {
+            routeId,
+            point: pointCounter,
+            datetime: new Date().toISOString(),
+            snow,
+            temp,
+            lat: position.coords.latitude.toFixed(6),
+            lon: position.coords.longitude.toFixed(6)
+        };
+
+        routePoints.push(pointData);
+        save();
+        loadTable();
+
+        document.getElementById("snow").value = "";
+        document.getElementById("temp").value = "";
+
+    }, () => alert("GPS permission required."));
+}
+
+function clearAll() {
+    if (!confirm("Delete route?")) return;
+    routePoints = [];
+    pointCounter = 0;
+    save();
+    loadTable();
+}
+
+function exportCSV() {
+    if (routePoints.length === 0) return;
+
+    let csv = "RouteID;Point;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude\n";
+    routePoints.forEach(p => {
+        csv += `${p.routeId};${p.point};${p.datetime};${p.snow};${p.temp};${p.lat};${p.lon}\n`;
+    });
+
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "snow_route_" + new Date().toISOString().slice(0,10) + ".csv";
+    link.click();
+}
+
+loadTable();
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+}
+</script>
+
+</body>
+</html>
