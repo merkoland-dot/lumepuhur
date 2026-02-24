@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snow Logger (Auto GPS)</title>
+<title>Snow Spot Logger</title>
 
 <style>
 body {
@@ -20,7 +20,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-input, button {
+input, textarea, button {
     width: 100%;
     padding: 12px;
     margin-top: 8px;
@@ -67,10 +67,10 @@ th { background: #2d6cdf; color: white; }
 <body>
 
 <div class="container">
-<h2>❄ Snow Logger (Auto GPS)</h2>
+<h2>❄ Snow Spot Logger (Auto GPS)</h2>
 
-<label>Station ID</label>
-<input type="text" id="station">
+<label>Spot ID / Name</label>
+<input type="text" id="station" placeholder="e.g. FIELD_A_01">
 
 <label>Date & Time</label>
 <input type="datetime-local" id="datetime">
@@ -81,24 +81,27 @@ th { background: #2d6cdf; color: white; }
 <label>Air Temperature (°C)</label>
 <input type="number" id="temp" step="0.1">
 
+<label>Notes (optional)</label>
+<textarea id="notes"></textarea>
+
 <div class="status" id="gpsStatus">
 GPS: waiting...
 </div>
 
-<button class="primary" onclick="addRecord()">Add Record (Auto GPS)</button>
+<button class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
 <button class="export" onclick="exportCSV()">Export CSV</button>
 <button class="clear" onclick="clearAll()">Clear All</button>
 
 <table>
 <thead>
 <tr>
-<th>Station</th>
+<th>Spot</th>
 <th>DateTime</th>
 <th>Snow</th>
 <th>Temp</th>
-<th>Latitude</th>
-<th>Longitude</th>
-<th>Accuracy (m)</th>
+<th>Lat</th>
+<th>Lon</th>
+<th>Accuracy</th>
 <th>Del</th>
 </tr>
 </thead>
@@ -108,10 +111,10 @@ GPS: waiting...
 </div>
 
 <script>
-let records = JSON.parse(localStorage.getItem("snowData")) || [];
+let records = JSON.parse(localStorage.getItem("snowSpots")) || [];
 
-function saveToStorage() {
-    localStorage.setItem("snowData", JSON.stringify(records));
+function save() {
+    localStorage.setItem("snowSpots", JSON.stringify(records));
 }
 
 function loadTable() {
@@ -142,99 +145,91 @@ function addRecord() {
     const datetime = document.getElementById("datetime").value;
     const snow = document.getElementById("snow").value;
     const temp = document.getElementById("temp").value;
+    const notes = document.getElementById("notes").value;
 
     if (!station || !datetime || snow === "") {
-        alert("Station, datetime and snow required.");
-        return;
-    }
-
-    if (!navigator.geolocation) {
-        alert("Geolocation not supported.");
+        alert("Spot ID, datetime and snow required.");
         return;
     }
 
     document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
 
-    navigator.geolocation.getCurrentPosition(
-        position => {
+    navigator.geolocation.getCurrentPosition(position => {
 
-            const lat = position.coords.latitude.toFixed(6);
-            const lon = position.coords.longitude.toFixed(6);
-            const acc = Math.round(position.coords.accuracy);
+        const lat = position.coords.latitude.toFixed(6);
+        const lon = position.coords.longitude.toFixed(6);
+        const acc = Math.round(position.coords.accuracy);
 
-            document.getElementById("gpsStatus").innerText =
-                "GPS: " + lat + ", " + lon + " (±" + acc + "m)";
+        document.getElementById("gpsStatus").innerText =
+            `GPS: ${lat}, ${lon} (±${acc}m)`;
 
-            records.push({
-                station,
-                datetime,
-                snow,
-                temp,
-                lat,
-                lon,
-                accuracy: acc
-            });
+        records.push({
+            station,
+            datetime,
+            snow,
+            temp,
+            lat,
+            lon,
+            accuracy: acc,
+            notes
+        });
 
-            saveToStorage();
-            loadTable();
-        },
-        error => {
-            document.getElementById("gpsStatus").innerText =
-                "GPS error: " + error.message;
+        save();
+        loadTable();
 
-            alert("GPS failed — record saved without location.");
+    }, error => {
+        document.getElementById("gpsStatus").innerText =
+            "GPS error: " + error.message;
 
-            records.push({
-                station,
-                datetime,
-                snow,
-                temp
-            });
+        alert("GPS failed. Spot saved without coordinates.");
 
-            saveToStorage();
-            loadTable();
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        }
-    );
+        records.push({
+            station,
+            datetime,
+            snow,
+            temp,
+            notes
+        });
+
+        save();
+        loadTable();
+    }, {
+        enableHighAccuracy: true
+    });
 }
 
 function deleteRecord(index) {
     records.splice(index, 1);
-    saveToStorage();
+    save();
     loadTable();
 }
 
 function clearAll() {
-    if (!confirm("Delete all records?")) return;
+    if (!confirm("Delete all spots?")) return;
     records = [];
-    saveToStorage();
+    save();
     loadTable();
 }
 
 function exportCSV() {
-    if (records.length === 0) {
-        alert("No data to export.");
-        return;
-    }
+    if (records.length === 0) return;
 
-    let csv = "Station;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m\n";
+    let csv = "SpotID;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m;Notes\n";
 
     records.forEach(r => {
-        csv += `${r.station};${r.datetime};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""}\n`;
+        csv += `${r.station};${r.datetime};${r.snow};${r.temp};${r.lat || ""};${r.lon || ""};${r.accuracy || ""};${r.notes || ""}\n`;
     });
 
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "snow_observations_" + new Date().toISOString().slice(0,10) + ".csv";
+    link.download = "snow_spots_" + new Date().toISOString().slice(0,10) + ".csv";
     link.click();
 }
 
-document.getElementById("datetime").value = new Date().toISOString().slice(0,16);
+document.getElementById("datetime").value =
+    new Date().toISOString().slice(0,16);
+
 loadTable();
 </script>
 
