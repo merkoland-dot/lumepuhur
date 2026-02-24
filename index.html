@@ -39,6 +39,12 @@ button {
 .export { background: #27ae60; color: white; }
 .clear { background: #c0392b; color: white; }
 
+.status {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -59,7 +65,7 @@ th { background: #2d6cdf; color: white; }
 <h2>❄ Snow Route Logger</h2>
 
 <label>Route ID</label>
-<input type="text" id="routeId">
+<input type="text" id="routeId" placeholder="e.g. JOGEVA_ROUTE_01">
 
 <label>Snow Depth (cm)</label>
 <input type="number" id="snow" step="0.1">
@@ -71,6 +77,8 @@ th { background: #2d6cdf; color: white; }
 <button class="export" onclick="exportCSV()">Export CSV</button>
 <button class="clear" onclick="clearAll()">Clear Route</button>
 
+<div class="status" id="gpsStatus">GPS: Not acquired</div>
+
 <table>
 <thead>
 <tr>
@@ -78,8 +86,9 @@ th { background: #2d6cdf; color: white; }
 <th>DateTime</th>
 <th>Snow</th>
 <th>Temp</th>
-<th>Lat</th>
-<th>Lon</th>
+<th>Latitude</th>
+<th>Longitude</th>
+<th>Accuracy (m)</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -105,11 +114,12 @@ function loadTable() {
         row.insertCell(3).innerText = p.temp;
         row.insertCell(4).innerText = p.lat;
         row.insertCell(5).innerText = p.lon;
+        row.insertCell(6).innerText = p.accuracy;
     });
 }
 
 function addPoint() {
-    const routeId = document.getElementById("routeId").value;
+    const routeId = document.getElementById("routeId").value.trim();
     const snow = document.getElementById("snow").value;
     const temp = document.getElementById("temp").value;
 
@@ -118,9 +128,23 @@ function addPoint() {
         return;
     }
 
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported.");
+        return;
+    }
+
+    document.getElementById("gpsStatus").innerText = "GPS: acquiring...";
+
     navigator.geolocation.getCurrentPosition(position => {
 
         pointCounter++;
+
+        const lat = position.coords.latitude.toFixed(6);
+        const lon = position.coords.longitude.toFixed(6);
+        const acc = Math.round(position.coords.accuracy);
+
+        document.getElementById("gpsStatus").innerText =
+            "GPS: " + lat + ", " + lon + " (±" + acc + "m)";
 
         const pointData = {
             routeId,
@@ -128,8 +152,9 @@ function addPoint() {
             datetime: new Date().toISOString(),
             snow,
             temp,
-            lat: position.coords.latitude.toFixed(6),
-            lon: position.coords.longitude.toFixed(6)
+            lat,
+            lon,
+            accuracy: acc
         };
 
         routePoints.push(pointData);
@@ -139,11 +164,16 @@ function addPoint() {
         document.getElementById("snow").value = "";
         document.getElementById("temp").value = "";
 
-    }, () => alert("GPS permission required."));
+    }, error => {
+        document.getElementById("gpsStatus").innerText =
+            "GPS error: " + error.message;
+    }, {
+        enableHighAccuracy: true
+    });
 }
 
 function clearAll() {
-    if (!confirm("Delete route?")) return;
+    if (!confirm("Delete entire route?")) return;
     routePoints = [];
     pointCounter = 0;
     save();
@@ -153,9 +183,10 @@ function clearAll() {
 function exportCSV() {
     if (routePoints.length === 0) return;
 
-    let csv = "RouteID;Point;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude\n";
+    let csv = "RouteID;Point;DateTime;Snow_cm;AirTemp_C;Latitude;Longitude;Accuracy_m\n";
+
     routePoints.forEach(p => {
-        csv += `${p.routeId};${p.point};${p.datetime};${p.snow};${p.temp};${p.lat};${p.lon}\n`;
+        csv += `${p.routeId};${p.point};${p.datetime};${p.snow};${p.temp};${p.lat};${p.lon};${p.accuracy}\n`;
     });
 
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
