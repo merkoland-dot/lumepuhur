@@ -21,43 +21,39 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 input, textarea, button {
-    width: 100%;
     padding: 12px;
-    margin-top: 8px;
     border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 16px;
 }
-button { border: none; cursor: pointer; }
-.primary { background: #2d6cdf; color: white; }
-.export { background: #27ae60; color: white; }
-.clear { background: #c0392b; color: white; }
+input, textarea { width: 100%; margin-top: 8px; }
+button { cursor: pointer; border: none; }
 
-.status {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #555;
-}
+.primary { background: #2d6cdf; color: white; width:100%; margin-top:10px; }
+.export { background: #27ae60; color: white; width:100%; margin-top:10px; }
+.clear { background: #c0392b; color: white; width:100%; margin-top:10px; }
+
+.status { margin-top:10px; font-size:14px; color:#555; }
 
 table {
-    width: 100%;
+    width:100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 13px;
+    margin-top:20px;
+    font-size:13px;
 }
 th, td {
-    border: 1px solid #ddd;
-    padding: 6px;
-    text-align: center;
+    border:1px solid #ddd;
+    padding:6px;
+    text-align:center;
 }
-th { background: #2d6cdf; color: white; }
+th { background:#2d6cdf; color:white; }
 
 .delete-btn {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 5px 8px;
-    border-radius: 6px;
+    background:#e74c3c;
+    color:white;
+    border:none;
+    padding:5px 8px;
+    border-radius:6px;
 }
 </style>
 </head>
@@ -76,7 +72,19 @@ th { background: #2d6cdf; color: white; }
 <input type="number" id="snow" min="0" step="0.1">
 
 <label>Air Temperature (°C)</label>
-<input type="number" id="temp" min="-50" max="50" step="0.1">
+
+<div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+    <input type="number" id="temp" min="-50" max="50" step="0.1">
+
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button type="button" onclick="makeNegative()">➖</button>
+        <button type="button" onclick="makePositive()">➕</button>
+        <button type="button" onclick="decreaseTemp(1)">-1</button>
+        <button type="button" onclick="increaseTemp(1)">+1</button>
+        <button type="button" onclick="decreaseTemp(5)">-5</button>
+        <button type="button" onclick="increaseTemp(5)">+5</button>
+    </div>
+</div>
 
 <label>Notes (optional)</label>
 <textarea id="notes"></textarea>
@@ -86,7 +94,7 @@ GPS: waiting...
 </div>
 
 <button class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
-<button onclick="clearForm()">Clear Form</button>
+<button class="primary" style="background:#aaa;" onclick="clearForm()">Clear Form</button>
 <button class="clear" onclick="clearStored()">Clear Stored Data</button>
 <button class="export" onclick="exportCSV()">Export CSV</button>
 
@@ -254,6 +262,34 @@ function exportCSV() {
     link.href = URL.createObjectURL(blob);
     link.download = "snow_spots_" + new Date().toISOString().slice(0,10) + ".csv";
     link.click();
+}
+
+/* Temperature controls */
+
+function makeNegative() {
+    const input = document.getElementById("temp");
+    if (input.value === "") return;
+    input.value = -Math.abs(parseFloat(input.value));
+}
+
+function makePositive() {
+    const input = document.getElementById("temp");
+    if (input.value === "") return;
+    input.value = Math.abs(parseFloat(input.value));
+}
+
+function decreaseTemp(step) {
+    const input = document.getElementById("temp");
+    let value = parseFloat(input.value);
+    if (isNaN(value)) value = 0;
+    input.value = (value - step).toFixed(1);
+}
+
+function increaseTemp(step) {
+    const input = document.getElementById("temp");
+    let value = parseFloat(input.value);
+    if (isNaN(value)) value = 0;
+    input.value = (value + step).toFixed(1);
 }
 
 document.getElementById("datetime").value = getLocalDatetimeString();
