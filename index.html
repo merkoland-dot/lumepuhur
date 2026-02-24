@@ -4,8 +4,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Snow Spot Logger</title>
-<link rel="stylesheet" href="style.css">
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eef3f9;
+    margin: 0;
+    padding: 15px;
+}
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    margin-top: 8px;
+}
+button {
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    font-weight: bold;
+    padding: 14px;
+}
+.primary { background:#2d6cdf; color:white; width:100%; margin-top:10px;}
+.export { background:#27ae60; color:white; width:100%; margin-top:10px;}
+.clear { background:#c0392b; color:white; width:100%; margin-top:10px;}
+.secondary { background:#aaa; color:white; width:100%; margin-top:10px;}
+
+.status { margin-top:10px; font-size:14px; color:#555; }
+
+table {
+    width:100%;
+    border-collapse: collapse;
+    margin-top:20px;
+    font-size:13px;
+}
+th, td {
+    border:1px solid #ddd;
+    padding:6px;
+    text-align:center;
+}
+th { background:#2d6cdf; color:white; }
+
+/* SNOW + TEMP layout */
+
+.row {
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+
+.row button {
+    flex:1;
+}
+
+.big-input {
+    font-size:26px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
 </head>
+
 <body>
 
 <div class="container">
@@ -20,9 +92,9 @@
 
 <!-- SNOW -->
 <label>Snow Depth (cm)</label>
-<input type="number" id="snow" min="0" step="0.1" class="snow-input">
+<input type="number" id="snow" min="0" step="0.1" class="big-input">
 
-<div class="snow-row">
+<div class="row">
     <button onclick="changeSnow(-10)">-10</button>
     <button onclick="changeSnow(-5)">-5</button>
     <button onclick="changeSnow(-1)">-1</button>
@@ -35,16 +107,16 @@
 
 <!-- TEMP -->
 <label>Air Temperature (°C)</label>
-<input type="number" id="temp" min="-50" max="50" step="0.1" class="temp-input">
+<input type="number" id="temp" min="-50" max="50" step="0.1" class="big-input">
 
-<div class="temp-row">
+<div class="row">
     <button onclick="changeTemp(-5)">-5</button>
     <button onclick="changeTemp(-1)">-1</button>
     <button onclick="changeTemp(1)">+1</button>
     <button onclick="changeTemp(5)">+5</button>
 </div>
 
-<div class="temp-row">
+<div class="row">
     <button onclick="makeNegative()">Make −</button>
     <button onclick="makePositive()">Make +</button>
 </div>
@@ -52,12 +124,12 @@
 <label>Notes</label>
 <textarea id="notes"></textarea>
 
-<div id="gpsStatus">GPS: waiting...</div>
+<div class="status" id="gpsStatus">GPS: waiting...</div>
 
-<button onclick="addRecord()">Add Spot (Auto GPS)</button>
-<button onclick="clearForm()">Clear Form</button>
-<button onclick="clearStored()">Clear Stored Data</button>
-<button onclick="exportCSV()">Export CSV</button>
+<button class="primary" onclick="addRecord()">Add Spot (Auto GPS)</button>
+<button class="secondary" onclick="clearForm()">Clear Form</button>
+<button class="clear" onclick="clearStored()">Clear Stored Data</button>
+<button class="export" onclick="exportCSV()">Export CSV</button>
 
 <table>
 <thead>
@@ -77,6 +149,15 @@
 
 </div>
 
+<!-- EXTERNAL JS -->
 <script src="app.js"></script>
+
+<!-- SERVICE WORKER REGISTRATION -->
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+}
+</script>
+
 </body>
 </html>
