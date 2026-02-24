@@ -1,4 +1,4 @@
-const CACHE_NAME = "snow-route-cache-v10";
+const CACHE_NAME = "snow-route-cache-v20";
 
 const ASSETS = [
   "./",
@@ -9,9 +9,7 @@ const ASSETS = [
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
