@@ -110,6 +110,7 @@ th { background:#2d6cdf; color:white; }
     <button type="button" class="snow-btn sminus" onclick="changeSnow(-1)">-1</button>
     <button type="button" class="snow-btn splus" onclick="changeSnow(1)">+1</button>
     <button type="button" class="snow-btn splus" onclick="changeSnow(5)">+5</button>
+    <button type="button" class="snow-btn splus" onclick="changeSnow(10)">+10</button>
 </div>
 
 <label>Air Temperature (°C)</label>
@@ -117,6 +118,8 @@ th { background:#2d6cdf; color:white; }
 
 <div class="temp-row">
     <button type="button" class="temp-btn tminus" onclick="changeTemp(-1)">-1</button>
+    <button type="button" class="temp-btn tminus" onclick="changeTemp(-0.1)">-0.1</button>
+    <button type="button" class="temp-btn tplus" onclick="changeTemp(0.1)">+0.1</button>
     <button type="button" class="temp-btn tplus" onclick="changeTemp(1)">+1</button>
 </div>
 
@@ -162,6 +165,7 @@ function getEETimestamp() {
     return new Date(now - offset).toISOString().slice(0,16);
 }
 
+/* SNOW */
 function changeSnow(step) {
     const input = document.getElementById("snow");
     let value = parseInt(input.value);
@@ -173,14 +177,19 @@ function changeSnow(step) {
     input.value = value;
 }
 
+/* TEMP */
 function changeTemp(step) {
     const input = document.getElementById("temp");
     let value = parseFloat(input.value);
     if (isNaN(value)) value = 0;
 
-    input.value = (value + step).toFixed(1);
+    value += step;
+    value = Math.round(value * 10) / 10;
+
+    input.value = value.toFixed(1);
 }
 
+/* TABLE */
 function loadTable() {
     const table = document.getElementById("tableBody");
     table.innerHTML = "";
@@ -207,6 +216,7 @@ function loadTable() {
     });
 }
 
+/* ADD */
 function addRecord() {
 
     const station = document.getElementById("station").value.trim();
